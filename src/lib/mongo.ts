@@ -1,24 +1,36 @@
 import { parse } from 'path';
 import { MongoClient } from 'mongodb';
-import dotenv from 'dotenv';
 import { Room } from '../type/land';
+import dotenv from 'dotenv';
 
 // Connection URL
 const { parsed: env } = dotenv.config({
     path: `${parse(__dirname).dir}/../.env`,
 });
-console.log('계정 =======================');
+console.log('Mongo library loaded');
 const id = env ? env.MONGODB_ID : process.env.MONGODB_ID;
 const pw = env ? env.MONGODB_PW : process.env.MONGODB_PW;
 const dbName = env ? env.MONGODB_NAME : process.env.MONGODB_NAME;
-console.log(`id ${!!id}, pw ${!!pw}, dbName ${!!dbName}`);
+const status = {
+    true: 'ok',
+    false: 'not exist',
+};
+console.log(
+    `\tㄴid: ${status[String(!!id)]}, pw ${status[String(!!pw)]}, dbName ${
+        status[String(!!dbName)]
+    }`,
+);
 
 const url = `mongodb+srv://${id}:${pw}@cluster0.scwj7.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(url);
-export const openMongo = async () => client.connect();
-export const closeMongo = async () => client.close();
+export const getMongoClient = (): MongoClient => new MongoClient(url);
+export const openMongo = async (client: MongoClient) => client.connect();
+export const closeMongo = async (client: MongoClient) => client.close();
 
-export async function addDocument(collectionName: string, elements: any[]) {
+export async function addDocument(
+    client: MongoClient,
+    collectionName: string,
+    elements: any[],
+) {
     try {
         console.log('Connected successfully to server');
         const db = client.db(dbName);
@@ -32,7 +44,7 @@ export async function addDocument(collectionName: string, elements: any[]) {
     }
 }
 
-export async function getRooms(): Promise<Room[] | Error> {
+export async function getRooms(client: MongoClient): Promise<Room[] | Error> {
     try {
         const db = client.db(dbName);
         const collection = db.collection('room');
@@ -43,7 +55,7 @@ export async function getRooms(): Promise<Room[] | Error> {
     }
 }
 
-export async function getRoom(articleNo: number | string) {
+export async function getRoom(client: MongoClient, articleNo: number | string) {
     try {
         const db = client.db(dbName);
         const collection = db.collection('room');
