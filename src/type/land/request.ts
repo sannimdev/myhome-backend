@@ -57,3 +57,8 @@ export interface SearchClusterList {
     tag?: string;
     pCortarNo: string;
 }
+
+export interface GetRoomsParams {
+    offset?: number;
+    limit?: number;
+}
