@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { MongoClient } from 'mongodb';
-import { closeMongo, getMongoClient, getRooms, openMongo } from 'src/lib/mongo';
-import { Room } from 'src/type/land';
+import { getRooms } from '../lib/mongo';
+import { Room } from '../type/land';
 
 type Response = {
     data: Room[];
@@ -9,26 +8,12 @@ type Response = {
 };
 @Injectable()
 export class RoomsService {
-    getAllRooms(/*{ offset = 0, limit = 0 }*/): Promise<Response> {
-        const client = getMongoClient();
-        return this.executeQuery(client, async () => {
-            const rooms = (await getRooms(client)) as Room[];
-            return {
-                data: rooms,
-                length: rooms.length,
-            };
-        });
-    }
+    async getAllRooms(/*{ offset = 0, limit = 0 }*/): Promise<Response> {
+        const rooms = (await getRooms()) as Room[];
 
-    private async executeQuery(client: MongoClient, callback: () => any) {
-        try {
-            await openMongo(client);
-            return await callback();
-        } catch (error) {
-            console.error(error);
-            throw error;
-        } finally {
-            await closeMongo(client);
-        }
+        return {
+            data: rooms,
+            length: rooms.length,
+        };
     }
 }
