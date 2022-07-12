@@ -1,7 +1,8 @@
 import { parse } from 'path';
-import { MongoClient } from 'mongodb';
-import { Room } from '../type/land';
+import { Collection, Db, MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
+import { Room } from '../type/land';
+import { COLLECTION_ROOM, COLLECTION_ROOM_DELETED } from '../data/configs';
 
 // Connection URL
 const { parsed: env } = dotenv.config({
@@ -22,45 +23,57 @@ console.log(
 );
 
 const url = `mongodb+srv://${id}:${pw}@cluster0.scwj7.mongodb.net/?retryWrites=true&w=majority`;
-export const getMongoClient = (): MongoClient => new MongoClient(url);
-export const openMongo = async (client: MongoClient) => client.connect();
-export const closeMongo = async (client: MongoClient) => client.close();
+const getMongoClient = (): MongoClient => new MongoClient(url);
+const openMongo = async (client: MongoClient) => client.connect();
+const closeMongo = async (client: MongoClient) => client.close();
 
-export async function addDocument(
-    client: MongoClient,
+export async function executeQuery(
     collectionName: string,
-    elements: any[],
+    callback: (collection: Collection, db: Db) => any,
 ) {
+    const client = await openMongo(getMongoClient());
     try {
-        console.log('Connected successfully to server');
         const db = client.db(dbName);
         const collection = db.collection(collectionName);
-        // the following code examples can be pasted here...
-        const insertResult = await collection.insertMany(elements);
-        return insertResult;
+        return await callback(collection, db);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    } finally {
+        await closeMongo(client);
+    }
+}
+
+export async function addDocuments(collectionName: string, elements: any[]) {
+    try {
+        console.log('Connected successfully to server');
+        return executeQuery(collectionName, (collection) =>
+            collection.insertMany(elements),
+        );
     } catch (e) {
         console.error('add Document', e);
         throw e;
     }
 }
 
-export async function getRooms(client: MongoClient): Promise<Room[] | Error> {
+export async function getRooms(): Promise<Room[] | Error> {
     try {
-        const db = client.db(dbName);
-        const collection = db.collection('room');
-        return collection.find().toArray() as unknown as Promise<Room[]>;
+        return executeQuery(
+            COLLECTION_ROOM,
+            (collection) =>
+                collection.find().toArray() as unknown as Promise<Room[]>,
+        );
     } catch (e) {
         console.error('getRooms', e);
         throw e;
     }
 }
 
-export async function getRoom(client: MongoClient, articleNo: number | string) {
+export async function getRoom(articleNo: number | string) {
     try {
-        const db = client.db(dbName);
-        const collection = db.collection('room');
-        const result = await collection.find({ atclNo: articleNo }).toArray();
-        return result;
+        return executeQuery(COLLECTION_ROOM, (collection) =>
+            collection.find({ atclNo: articleNo }).toArray(),
+        );
     } catch (e) {
         console.error('getRoom', e);
         throw e;
