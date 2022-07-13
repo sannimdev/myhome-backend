@@ -1,8 +1,9 @@
 import { parse } from 'path';
 import { Collection, Db, MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
-import { Room } from '../type/land';
+import { GetRoomsParams, Room } from '../type/land';
 import { COLLECTION_ROOM, COLLECTION_ROOM_DELETED } from '../data/configs';
+import { Get, NotFoundException } from '@nestjs/common';
 
 // Connection URL
 const { parsed: env } = dotenv.config({
@@ -56,13 +57,24 @@ export async function addDocuments(collectionName: string, elements: any[]) {
     }
 }
 
-export async function getRooms(): Promise<Room[] | Error> {
+export async function getRooms({
+    offset = 0,
+    limit = 20,
+}: GetRoomsParams): Promise<Room[] | Error> {
     try {
-        return executeQuery(
+        const rooms = await executeQuery(
             COLLECTION_ROOM,
             (collection) =>
-                collection.find().toArray() as unknown as Promise<Room[]>,
+                collection
+                    .find()
+                    .skip(offset)
+                    .limit(limit)
+                    .toArray() as unknown as Promise<Room[]>,
         );
+        if (!rooms) {
+            throw new NotFoundException();
+        }
+        return rooms;
     } catch (e) {
         console.error('getRooms', e);
         throw e;
