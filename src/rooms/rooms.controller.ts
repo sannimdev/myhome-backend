@@ -14,4 +14,14 @@ export class RoomsController {
     ) {
         return this.roomsService.getAllRooms({ offset, limit });
     }
+
+    @Get('/deleted')
+    @UsePipes(ParseIntPipe)
+    getDeletedRooms(
+        // @Request() req,
+        @Query('offset') offset: number,
+        @Query('limit') limit: number,
+    ) {
+        return this.roomsService.getDeletedRooms({ offset, limit });
+    }
 }

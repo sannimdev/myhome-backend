@@ -81,6 +81,30 @@ export async function getRooms({
     }
 }
 
+export async function getDeletedRooms({
+    offset = 0,
+    limit = 20,
+}: GetRoomsParams): Promise<Room[] | Error> {
+    try {
+        const rooms = await executeQuery(
+            COLLECTION_ROOM_DELETED,
+            (collection) =>
+                collection
+                    .find()
+                    .skip(offset)
+                    .limit(limit)
+                    .toArray() as unknown as Promise<Room[]>,
+        );
+        if (!rooms) {
+            throw new NotFoundException();
+        }
+        return rooms;
+    } catch (e) {
+        console.error('getDeletedRooms', e);
+        throw e;
+    }
+}
+
 export async function getRoom(articleNo: number | string) {
     try {
         return executeQuery(COLLECTION_ROOM, (collection) =>
