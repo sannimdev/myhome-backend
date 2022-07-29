@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { getDeletedRooms, getRooms } from '../lib/mongo';
+import { COLLECTION_ROOM, COLLECTION_ROOM_DELETED } from 'src/data/configs';
+import { getRooms } from '../lib/mongo';
 import { GetRoomsParams, Room } from '../type/land';
 
 type Response = {
@@ -10,7 +11,10 @@ type Response = {
 @Injectable()
 export class RoomsService {
     async getAllRooms({ offset, limit }: GetRoomsParams): Promise<Response> {
-        const rooms = (await getRooms({ offset, limit })) as Room[];
+        const rooms = (await getRooms(
+            { offset, limit },
+            COLLECTION_ROOM,
+        )) as Room[];
 
         return {
             data: rooms,
@@ -22,7 +26,10 @@ export class RoomsService {
         offset,
         limit,
     }: GetRoomsParams): Promise<Response> {
-        const rooms = (await getDeletedRooms({ offset, limit })) as Room[];
+        const rooms = (await getRooms(
+            { offset, limit },
+            COLLECTION_ROOM_DELETED,
+        )) as Room[];
 
         return {
             data: rooms,

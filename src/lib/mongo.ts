@@ -57,13 +57,14 @@ export async function addDocuments(collectionName: string, elements: any[]) {
     }
 }
 
-export async function getRooms({
-    offset = 0,
-    limit = 20,
-}: GetRoomsParams): Promise<Room[] | Error> {
+type roomTypes = typeof COLLECTION_ROOM | typeof COLLECTION_ROOM_DELETED;
+export async function getRooms(
+    { offset = 0, limit = 20 }: GetRoomsParams,
+    roomType: roomTypes,
+): Promise<Room[] | Error> {
     try {
         const rooms = await executeQuery(
-            COLLECTION_ROOM,
+            roomType,
             (collection) =>
                 collection
                     .find()
@@ -77,41 +78,6 @@ export async function getRooms({
         return rooms;
     } catch (e) {
         console.error('getRooms', e);
-        throw e;
-    }
-}
-
-export async function getDeletedRooms({
-    offset = 0,
-    limit = 20,
-}: GetRoomsParams): Promise<Room[] | Error> {
-    try {
-        const rooms = await executeQuery(
-            COLLECTION_ROOM_DELETED,
-            (collection) =>
-                collection
-                    .find()
-                    .skip(offset)
-                    .limit(limit)
-                    .toArray() as unknown as Promise<Room[]>,
-        );
-        if (!rooms) {
-            throw new NotFoundException();
-        }
-        return rooms;
-    } catch (e) {
-        console.error('getDeletedRooms', e);
-        throw e;
-    }
-}
-
-export async function getRoom(articleNo: number | string) {
-    try {
-        return executeQuery(COLLECTION_ROOM, (collection) =>
-            collection.find({ atclNo: articleNo }).toArray(),
-        );
-    } catch (e) {
-        console.error('getRoom', e);
         throw e;
     }
 }
