@@ -59,19 +59,19 @@ export async function addDocuments(collectionName: string, elements: any[]) {
 
 type roomTypes = typeof COLLECTION_ROOM | typeof COLLECTION_ROOM_DELETED;
 export async function getRooms(
-    { offset = 0, limit = 20 }: GetRoomsParams,
+    { offset = 0, limit = 20, keyword = '' }: GetRoomsParams,
     roomType: roomTypes,
 ): Promise<Room[] | Error> {
     try {
-        const rooms = await executeQuery(
-            roomType,
-            (collection) =>
-                collection
-                    .find()
-                    .skip(offset)
-                    .limit(limit)
-                    .toArray() as unknown as Promise<Room[]>,
-        );
+        const rooms = await executeQuery(roomType, (collection) => {
+            const result = keyword
+                ? collection.find({ $text: { $search: keyword } })
+                : collection.find();
+            return result
+                .skip(offset)
+                .limit(limit)
+                .toArray() as unknown as Promise<Room[]>;
+        });
         if (!rooms) {
             throw new NotFoundException();
         }

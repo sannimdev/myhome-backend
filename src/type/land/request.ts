@@ -61,4 +61,5 @@ export interface SearchClusterList {
 export interface GetRoomsParams {
     offset?: number;
     limit?: number;
+    keyword?: string;
 }

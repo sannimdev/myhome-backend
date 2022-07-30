@@ -10,9 +10,13 @@ type Response = {
 
 @Injectable()
 export class RoomsService {
-    async getAllRooms({ offset, limit }: GetRoomsParams): Promise<Response> {
+    async getAllRooms({
+        offset,
+        limit,
+        keyword,
+    }: GetRoomsParams): Promise<Response> {
         const rooms = (await getRooms(
-            { offset, limit },
+            { offset, limit, keyword },
             COLLECTION_ROOM,
         )) as Room[];
 
@@ -25,9 +29,10 @@ export class RoomsService {
     async getDeletedRooms({
         offset,
         limit,
+        keyword,
     }: GetRoomsParams): Promise<Response> {
         const rooms = (await getRooms(
-            { offset, limit },
+            { offset, limit, keyword },
             COLLECTION_ROOM_DELETED,
         )) as Room[];
 
