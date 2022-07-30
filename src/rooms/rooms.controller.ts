@@ -6,22 +6,22 @@ export class RoomsController {
     constructor(private roomsService: RoomsService) {}
 
     @Get()
-    @UsePipes(ParseIntPipe)
     getRooms(
         // @Request() req,
-        @Query('offset') offset: number,
-        @Query('limit') limit: number,
+        @Query('offset', ParseIntPipe) offset: number,
+        @Query('limit', ParseIntPipe) limit: number,
+        @Query('keyword') keyword: string,
     ) {
-        return this.roomsService.getAllRooms({ offset, limit });
+        return this.roomsService.getAllRooms({ offset, limit, keyword });
     }
 
     @Get('/deleted')
-    @UsePipes(ParseIntPipe)
     getDeletedRooms(
         // @Request() req,
-        @Query('offset') offset: number,
-        @Query('limit') limit: number,
+        @Query('offset', ParseIntPipe) offset: number,
+        @Query('limit', ParseIntPipe) limit: number,
+        @Query('keyword') keyword: string,
     ) {
-        return this.roomsService.getDeletedRooms({ offset, limit });
+        return this.roomsService.getDeletedRooms({ offset, limit, keyword });
     }
 }
